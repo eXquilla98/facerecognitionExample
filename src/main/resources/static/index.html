@@ -1,10 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
     <title>Title</title>
 </head>
 <body>
+<h1>Face recognition app</h1>
+<video id="camera" width="640" height="480" autoplay></video>
+<form action="/face-recognition/capture-image" method="post">
+    <button type="submit">Capture Image</button></form>
+<script>
+     const video = document.getElementById('camera');
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(error => {
+                console.error('Error accessing camera:', error);
+            });
+
+        function captureImage() {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = video.width;
+            canvas.height = video.height;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = canvas.toDataURL('image/png');
+
+            // Send imageData to the backend for face recognition
+            fetch('/recognize-face', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `imageData=${encodeURIComponent(imageData)}`,
+            })
+            .then(response => response.text())
+            .then(result => {
+                alert(result); // Display the result
+            })
+            .catch(error => {
+                console.error('Error recognizing face:', error);
+            });
+        }
+
+
+</script>
 
 </body>
+
+
+
 </html>
